@@ -11,15 +11,7 @@ from __future__ import unicode_literals
 
 import os
 import numpy as np
-import matplotlib
-import matplotlib.pyplot as plt
-from matplotlib.pyplot import GridSpec
 import netCDF4 as nc
-import cmocean.cm as cmo
-from scipy.optimize import curve_fit
-from matplotlib.animation import ArtistAnimation
-import seaborn as sb
-sb.set(style='ticks')
 
 
 #%% get Rafter's dataset
