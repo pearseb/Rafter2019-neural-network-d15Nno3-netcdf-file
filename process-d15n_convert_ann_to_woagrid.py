@@ -16,6 +16,7 @@ import netCDF4 as nc
 
 #%% get Rafter's dataset
 
+os.chdir('C:\\Users\\pearseb\\Dropbox\\PostDoc\\data\\nitrogen isotopes\\convert_Rafter2019_netcdf')
 d15N = np.genfromtxt('Rafter2019_inversemodel_d15N_no3.txt',skip_header=1, usecols=(0,1,2,3,4))
 
 # change the longitudes to positives
@@ -51,7 +52,7 @@ print(np.unique(d15N[:,2]))
 
 #%% load WOA grid
 
-data = nc.Dataset('woa13_all_n00_01.nc', 'r')
+data = nc.Dataset('../../nutrients/woa13_all_n00_01.nc', 'r')
 lon = data.variables['lon'][...]
 lat = data.variables['lat'][...]
 
@@ -104,16 +105,25 @@ for i,lon1 in enumerate(lon):
                 print("More than one value found!")
                 exit
 
+np.savez('Rafter_ann_d15N_no3_gridded.npz', d15n_obs_grid=d15n_obs_grid, std_obs_grid=std_obs_grid)
+
 
 #%% save as npz file (gridded)
 
-np.savez('Rafter_ann_d15N_no3_gridded.npz', d15n_obs_grid=d15n_obs_grid, std_obs_grid=std_obs_grid)
+data = np.load('Rafter_ann_d15N_no3_gridded.npz')
+data.files
+d15n_obs_grid = data['d15n_obs_grid']
+std_obs_grid = data['std_obs_grid']
 
+
+#%% change longitudes back to being negative (-180 --> 0)
+
+lon[lon>180.0] -= 360.0
 
 #%% save as netcdf file
 
 ## activate line below if overwriting file
-#os.remove('Rafter2019_ann_d15N_no3_gridded.nc')
+os.remove('Rafter2019_ann_d15N_no3_gridded.nc')
 data = nc.Dataset('Rafter2019_ann_d15N_no3_gridded.nc', 'w', format='NETCDF4_CLASSIC')
 
 lond = data.createDimension('lon', 360)
@@ -125,10 +135,10 @@ lonv = data.createVariable('lon', np.float64, ('lon',))
 latv = data.createVariable('lat', np.float64, ('lat',))
 depv = data.createVariable('dep', np.float64, ('dep',))
 lonbndv = data.createVariable('lon_bnds', np.float64, ('lon','nbounds'))
-latbndv = data.createVariable('lat_bnds', np.float64, ('lat','nbounds')))
-depbndv = data.createVariable('dep_bnds', np.float64, ('dep','nbounds')))
-d15nv = data.createVariable('d15N_no3', np.float64, ('dep','lat','lon')
-stdv = data.createVariable('d15N_stdev', np.float64, ('dep','lat','lon')
+latbndv = data.createVariable('lat_bnds', np.float64, ('lat','nbounds'))
+depbndv = data.createVariable('dep_bnds', np.float64, ('dep','nbounds'))
+d15nv = data.createVariable('d15N_no3', np.float64, ('dep','lat','lon'))
+stdv = data.createVariable('d15N_stdev', np.float64, ('dep','lat','lon'))
 
 data.description = 'Global d15N of NO3 data produced by Rafter et al. (2019) Biogeosciences regridded onto World Ocean Atlas coordinates'
 data.history = "Created by Pearse J. Buchanan on 20th September 2019"
